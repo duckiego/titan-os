@@ -1,0 +1,23 @@
+software = 
+{
+	version = "${VERSION}";
+    hardware-compatibility: [ "secure-server" ];
+
+	files: (
+		{
+			filename = "system_b.efi";
+			path = "system_b.efi";
+		},
+        {
+            filename = "filesystem.squashfs";
+            path = "filesystem.squashfs";
+        }
+	);
+
+	scripts: (
+		{
+			filename = "update.sh";
+			type = "shellscript";
+		}
+	);
+}

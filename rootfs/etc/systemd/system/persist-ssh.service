@@ -1,0 +1,12 @@
+[Unit]
+Description=Restore SSH Keys from Persistent Storage
+Before=ssh.service
+RequiresMountsFor=/var/lib/data
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/persist-ssh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
