@@ -11,6 +11,33 @@ An industrial-grade, immutable Linux server OS based on Debian Bookworm.
   - Data: `/var/lib/data` (Auto-mounted ext4 partition)
   - Config: SSH Host Keys & Root Authorized Keys (Auto-restored)
 - **Updates**: SWUpdate (OTA Ready)
+- **Security**: Signed Updates (X.509 + CMS)
+
+## Disk Layout
+
+The system uses a Dual-AB partitioning scheme for atomic updates:
+
+| Partition | Label        | Type | Content |
+|-----------|--------------|------|---------|
+| 1         | `EFI_SYSTEM` | FAT32| Bootloader, Kernel Channels (A/B), RootFS Images |
+| 2         | `PERSISTENT` | ext4 | User Data (`/var/lib/data`), Docker Volumes, Configs |
+
+### EFI Partition Structure
+```
+/
+├── BGENV.DAT
+├── EFI/
+│   ├── BOOT/
+│   │   └── BOOTX64.EFI      # Efibootguard
+│   └── Linux/
+│       ├── system_a.efi     # Slot A Kernel (UKI)
+│       └── system_b.efi     # Slot B Kernel (UKI)
+└── live/
+    ├── slot_a/
+    │   └── fs.squash        # Slot A RootFS
+    └── slot_b/
+        └── fs.squash        # Slot B RootFS
+```
 
 ## Project Structure
 
@@ -23,6 +50,8 @@ titan-os/
 │
 ├── update/                     # 🔄 OTA Update Generator
 │   ├── create.sh               # Update package generator
+│   ├── generate_keys.sh        # 🔐 Key generator
+│   ├── keys/                   # 🔑 Signing keys (Gitignored)
 │   └── templates/              # SWUpdate templates
 │
 └── deploy/                     # 🚀 Deployment Tools
@@ -60,6 +89,6 @@ Output: `titan-update-v2.0.0.swu`
 
 Install on device:
 ```bash
-swupdate -i titan-update-v2.0.0.swu
+swupdate -i titan-update-v2.0.0.swu -k swupdate-pub.pem
 ```
 (Requires `secure-server 1.0` in `/etc/hwrevision`, which is default).
