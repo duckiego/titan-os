@@ -12,12 +12,30 @@ An industrial-grade, immutable Linux server OS based on Debian Bookworm.
   - Config: SSH Host Keys & Root Authorized Keys (Auto-restored)
 - **Updates**: SWUpdate (OTA Ready)
 
+## Project Structure
+
+```
+titan-os/
+├── build/                      # 🛠️ Image Builder
+│   ├── build.sh                # Main build script
+│   ├── stages/                 # Modular build stages
+│   └── rootfs/                 # RootFS overlays
+│
+├── update/                     # 🔄 OTA Update Generator
+│   ├── create.sh               # Update package generator
+│   └── templates/              # SWUpdate templates
+│
+└── deploy/                     # 🚀 Deployment Tools
+    ├── deploy_to_pve.sh
+    └── update_vm.sh
+```
+
 ## Quick Start
 
 ### 1. Build Image
 Run the builder on a Debian-based host (requires sudo):
 ```bash
-./builder/build_image.sh
+./build/build.sh
 ```
 Output: `titan-os-v1.img` (4GB GPT Disk Image)
 
@@ -36,7 +54,7 @@ Flash the image to a USB drive or import into a Virtual Machine (UEFI required).
 ### 4. OTA Update
 Generate an update package:
 ```bash
-./builder/create_update.sh
+./update/create.sh
 ```
 Output: `titan-update-v2.0.0.swu`
 

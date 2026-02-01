@@ -12,6 +12,7 @@ sudo chroot "$ROOTFS_DIR" apt-get update
 sudo chroot "$ROOTFS_DIR" apt-get install -y systemd-resolved || true
 
 # System Settings
+echo "CUSTOM_VERSION=\"$OS_VERSION\"" | sudo tee -a "$ROOTFS_DIR/etc/os-release" >/dev/null
 echo "titan-node" | sudo tee "$ROOTFS_DIR/etc/hostname" >/dev/null
 echo "secure-server 1.0" | sudo tee "$ROOTFS_DIR/etc/hwrevision" >/dev/null
 echo "root:root" | sudo chroot "$ROOTFS_DIR" chpasswd

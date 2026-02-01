@@ -4,7 +4,7 @@ set -e
 # Titan-OS Image Builder
 # Entry point that orchestrates modular build scripts
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/scripts" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/stages" && pwd)"
 
 # Load configuration
 source "$SCRIPT_DIR/config.sh"
