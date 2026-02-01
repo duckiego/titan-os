@@ -1,16 +1,18 @@
 software = 
 {
 	version = "${VERSION}";
-    hardware-compatibility: [ "secure-server" ];
+    hardware-compatibility: [ "1.0" ];
 
 	files: (
 		{
 			filename = "system_b.efi";
-			path = "system_b.efi";
+			path = "/tmp/esp/EFI/Linux/system_b.efi";
+            sha256 = "${HASH_SYSTEM}";
 		},
         {
             filename = "filesystem.squashfs";
-            path = "filesystem.squashfs";
+            path = "/tmp/esp/live/slot_b/filesystem.squashfs";
+            sha256 = "${HASH_FS}";
         }
 	);
 
@@ -18,6 +20,7 @@ software =
 		{
 			filename = "update.sh";
 			type = "shellscript";
+            sha256 = "${HASH_UPDATE}";
 		}
 	);
 }

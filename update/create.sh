@@ -16,8 +16,8 @@ fi
 # Override specific update settings
 OS_VERSION="1.0.1"
 VERSION="$OS_VERSION"
-WORKDIR="swu_build"
-OUTPUT_SWU="titan-update-v${VERSION}.swu"
+WORKDIR="$SCRIPT_DIR/swu_build"
+OUTPUT_SWU="$SCRIPT_DIR/../titan-update-v${VERSION}.swu"
 TEMPLATES_DIR="$SCRIPT_DIR/templates/swupdate"
 
 echo "=== Titan-OS Update Builder (Rebuild Mode) ==="
@@ -67,15 +67,42 @@ chmod +x "$WORKDIR/update.sh"
 
 # 5. Generate SW-Description
 echo "[+] Generating SW-Description..."
-export VERSION
+# Calculate Hashes
+echo "[+] Calculating Hashes..."
+HASH_SYSTEM=$(sha256sum "$WORKDIR/system_b.efi" | awk '{print $1}')
+HASH_FS=$(sha256sum "$WORKDIR/filesystem.squashfs" | awk '{print $1}')
+HASH_UPDATE=$(sha256sum "$WORKDIR/update.sh" | awk '{print $1}')
+
+export VERSION HASH_SYSTEM HASH_FS HASH_UPDATE
 envsubst < "$TEMPLATES_DIR/sw-description.template" > "$WORKDIR/sw-description"
 
-# 6. Pack SWU
-echo "[+] Packing SWU..."
-cd "$WORKDIR"
-for f in sw-description update.sh system_b.efi filesystem.squashfs; do
-    echo "$f"
-done | cpio -ov -H crc > "../$OUTPUT_SWU"
+# 6. Sign SW-Description
+KEYS_DIR="$SCRIPT_DIR/keys"
+if [ -f "$KEYS_DIR/private.pem" ] && [ -f "$KEYS_DIR/public.pem" ]; then
+    echo "[+] Signing sw-description (CMS)..."
+    # Use CMS signing with the certificate
+    openssl cms -sign -in "$WORKDIR/sw-description" \
+        -out "$WORKDIR/sw-description.sig" \
+        -signer "$KEYS_DIR/public.pem" \
+        -inkey "$KEYS_DIR/private.pem" \
+        -outform DER -nosmimecap -binary
+
+    # 7. Pack SWU
+    echo "[+] Packing SWU (Signed)..."
+    cd "$WORKDIR"
+    for f in sw-description sw-description.sig update.sh system_b.efi filesystem.squashfs; do
+        echo "$f"
+    done | cpio -ov -H crc > "$OUTPUT_SWU"
+else
+    echo "Warning: Keys not found in $KEYS_DIR. Skipping signing."
+    
+    # 7. Pack SWU
+    echo "[+] Packing SWU (Unsigned)..."
+    cd "$WORKDIR"
+    for f in sw-description update.sh system_b.efi filesystem.squashfs; do
+        echo "$f"
+    done | cpio -ov -H crc > "$OUTPUT_SWU"
+fi
 
 echo "✅ Update Package Ready: $OUTPUT_SWU"
 echo "To install on device: swupdate -i $OUTPUT_SWU"
