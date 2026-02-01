@@ -1,0 +1,22 @@
+#!/bin/sh
+# Persist SSH host keys and authorized_keys across reboots
+# This script runs before sshd to restore/generate SSH keys
+
+DATA_DIR="/var/lib/data/persistence"
+mkdir -p "$DATA_DIR/ssh" "$DATA_DIR/root_ssh"
+
+# 1. Host Keys
+if [ -f "$DATA_DIR/ssh/ssh_host_rsa_key" ]; then
+    cp "$DATA_DIR/ssh"/ssh_host_* /etc/ssh/
+else
+    ssh-keygen -A
+    cp /etc/ssh/ssh_host_* "$DATA_DIR/ssh/"
+fi
+
+# 2. Root Authorized Keys
+mkdir -p /root/.ssh
+if [ -f "$DATA_DIR/root_ssh/authorized_keys" ]; then
+    cp "$DATA_DIR/root_ssh/authorized_keys" /root/.ssh/
+    chmod 700 /root/.ssh
+    chmod 600 /root/.ssh/authorized_keys
+fi

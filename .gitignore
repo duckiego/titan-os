@@ -1,0 +1,5 @@
+swu_build
+
+*.img
+*.swu
+update/keys/
